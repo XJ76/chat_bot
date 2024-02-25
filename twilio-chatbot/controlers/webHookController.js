@@ -1,89 +1,154 @@
-const MessagingResponse = require('twilio').twiml.MessagingResponse;
-const twilioClient = require('twilio')(
-  'AC82a8b7d67ff99529dbdd0ffb93072976',
-  '336b546a8431de0a8a06ba585a75d2c8'
+const MessagingResponse = require("twilio").twiml.MessagingResponse;
+const twilioClient = require("twilio")(
+  "AC8bd5b8fa30180551cef6d008f1ce59aa",
+  "7ea38ae1ad68159b4d5a39d5105ad070"
 );
 
-let userSessions = {}; // Object to store user sessions
+const userSessions = {};
 
 exports.handleIncomingMessage = async (req, res) => {
   const twiml = new MessagingResponse();
-  const incomingMessage = req.body.Body.toLowerCase().trim(); // Convert to lowercase and trim whitespace
+  const incomingMessage = req.body.Body.toLowerCase().trim();
   const senderPhoneNumber = req.body.From;
 
   try {
     if (!userSessions[senderPhoneNumber]) {
-      // User session does not exist, prompt for login or register
-      if (incomingMessage === 'hi'|| incomingMessage === "Hi" || incomingMessage ==="hallo" ) {
-        // Send a welcome message and prompt for login or register
-        twiml.message('🏦 Welcome to Noq Cash! How can I help you today?\n\n1️⃣ Login\n2️⃣ Register');
+      // Initiate session
+      userSessions[senderPhoneNumber] = {
+        phoneNumber: "",
+        password: "",
+        loggedIn: false,
+        phoneNumberEntered: false,
+        passwordEntered: false,
+      };
+
+      if (incomingMessage === "hi" || incomingMessage === "hello") {
+        // Welcome message and login/register prompt
+        twiml.message(
+          " Welcome to Noq Cash! How can I help you today?\n\n1️⃣ Login\n2️⃣ Register"
+        );
       } else {
-        // Prompt the user to type 'hi' to start
+        // Prompt for 'hi' to start
         twiml.message('❓ Please type "hi" to start.');
       }
     } else if (!userSessions[senderPhoneNumber].loggedIn) {
-      // User is not logged in, prompt for login or register
-      if (incomingMessage === '1') {
-        // Handle login option
-        twiml.message('🔐 Please enter your phone number and password in the format: "PhoneNumber Password"');
-      } else if (incomingMessage === '2') {
-        // Handle register option
-        twiml.message('✏️ Please provide your details to register.');
+      // Handle login/register flow
+      if (incomingMessage === "1") {
+        // Prompt for phone number
+        twiml.message(
+          ' Please enter your phone number in the format: "PhoneNumber"'
+        );
+        userSessions[senderPhoneNumber].phoneNumberEntered = true;
+      } else if (incomingMessage === "2") {
+        // Handle registration
+        twiml.message("✏️ Please provide your details to register.");
+      } else if (userSessions[senderPhoneNumber].phoneNumberEntered) {
+        // User entered phone number, store it
+        userSessions[senderPhoneNumber].phoneNumber = incomingMessage;
+        userSessions[senderPhoneNumber].phoneNumberEntered = false;
+        // Proceed with password prompt
+        twiml.message(" Please enter your password.");
+        userSessions[senderPhoneNumber].passwordEntered = true;
+      } else if (userSessions[senderPhoneNumber].passwordEntered) {
+        // User entered password, verify login
+        // Replace with your secure password validation logic (e.g., using a password hashing library)
+        if (
+          userSessions[senderPhoneNumber].phoneNumber === "0782487769" &&
+          incomingMessage === "password123" // Replace with actual credentials and validation
+        ) {
+          // Login successful
+          userSessions[senderPhoneNumber].loggedIn = true;
+          twiml.message(
+            " You have successfully logged in. What would you like to do?"
+          );
+          twiml.message(
+            "🏦 *Welcome to NoQ Cash!* How can I help you today?\n\n" +
+            "1️⃣ *Send Money*\n" +
+            "2️⃣ *Request Payment*\n" +
+            "3️⃣ *Transfer History*\n" +
+            "4️⃣ *Visa Card Application*\n" +
+            "5️⃣ *Bills & Payments*\n" +
+            "6️⃣ *Loyalty Points*\n" +
+            "7️⃣ *My Account*\n"
+          );
+        } else {
+          // Login failed
+          twiml.message("❌ Incorrect credentials. Please try again.");
+          // Reset session for retry
+          userSessions[senderPhoneNumber].phoneNumberEntered = false;
+          userSessions[senderPhoneNumber].passwordEntered = false;
+        }
       } else {
-        // Prompt the user to choose login or register
-        twiml.message('❓ Please choose from the options: "1️⃣ Login" or "2️⃣ Register".');
+        // Prompt for login/register choice
+        twiml.message(
+          '❓ Please choose from the options: "1️⃣ Login" or "2️⃣ Register".'
+        );
       }
     } else {
-      // User is logged in, show menu options
-      if (incomingMessage === '1') {
-        // Handle balance inquiry
-        twiml.message('💰 Your current account balance is $1000.');
-      } else if (incomingMessage === '2') {
-        // Handle funds transfer
-        twiml.message('💸 Please enter recipient\'s phone number and the amount in the format: "RecipientPhoneNumber Amount"');
-      } else if (incomingMessage === '3') {
-        // Handle withdrawal
-        twiml.message('💸 Please enter the amount you want to withdraw.');
-      } else if (incomingMessage === '4') {
-        // Handle deposit
-        twiml.message('💸 Please enter the amount you want to deposit.');
-      } else if (incomingMessage === '5') {
-        // Handle account settings
-        twiml.message('⚙️ Here you can update your account settings.');
-      } else {
-        // For any other message, provide a default response
-        twiml.message('❓ Sorry, I didn\'t understand that. Please choose from the available options.');
-      }
-    }
+      // User is logged in, handle menu options
+      if (incomingMessage === "1") {
+        twiml.message(
+          "📤 *Send Money*\n" +
+          "Please enter the recipient's Phone Number and amount to send."
+        );
+      } else if (incomingMessage === "2") {
+        twiml.message(
+          "🔗 *Request Payment*\n" +
+          "To request payment, enter the details of the payment request."
+        );
+      } else if (incomingMessage === "3") {
+        twiml.message(
+          "🔄 *Transfer History*\n" +
+          "View your transaction history and details here."
+        );
+      } else if (incomingMessage === "4") {
+        twiml.message(
+          "💳 *Visa Card Application*\n" +
+          "Apply for a NoQ Cash Visa card for convenient transactions.\n\n" +
+          "1️⃣ *Physical Visa Card*\n" +
+          "2️⃣ *Virtual Visa Card*\n"
+        );
+      } else if (incomingMessage === "5") {
+        // Sub-menu for Bills & Payments
+        twiml.message(
+          "💸 *Bills & Payments*\n\n" +
+          "Manage and pay your bills seamlessly through NoQ Cash.\n" +
+          "1️⃣ *Buy Airtime*\n" +
+          "2️⃣ *Nyaradzo Funeral Policy*\n" +
+          "3️⃣ *Buy Electricity*\n" +
+          "4️⃣ *Eco Sure Life Cover*\n" +
+          "5️⃣ *Back*\n"
+        );
 
-    // Send the response
-    res.writeHead(200, { 'Content-Type': 'text/xml' });
+        // EDIT THIS MENU FOR BILLS AND PAYMENTS(OPTION 5)
+        // if (incomingMessage === "1") {
+        //   // Handle Buy Airtime sub-options
+        //   twiml.message("Implementing Buy Airtime options...");
+        // } else if (incomingMessage === "2") {
+        //   // Handle Nyaradzo Funeral Policy sub-options
+        //   twiml.message("Implementing Nyaradzo Funeral Policy options...");
+        // } else if (incomingMessage === "3") {
+        //   // Handle Buy Electricity sub-options
+        //   twiml.message("Implementing Buy Electricity options...");
+        // } else if (incomingMessage === "4") {
+        //   // Handle Eco Sure Life Cover sub-options
+        //   twiml.message("Implementing Eco Sure Life Cover options...");
+        // } else if (incomingMessage === "5") {
+        //   // Go back to main menu
+        //   twiml.message("Returning to main menu...");
+        // } else {
+        //   // Invalid option
+        //   twiml.message("Invalid option. Please choose from the available options.");
+        // }
+
+      }   
+       
+    } 
+
+    // Send response
+    res.writeHead(200, { "Content-Type": "text/xml" });
     res.end(twiml.toString());
-
-    // Check if the user logged in, and update session
-    if (!userSessions[senderPhoneNumber] && incomingMessage === '1') {
-      // Handle login option
-      twiml.message('🔐 Please enter your phone number and password in the format: "PhoneNumber Password"');
-      userSessions[senderPhoneNumber] = { phoneNumber: true }; // Save the phone number flag in the session
-    } else if (userSessions[senderPhoneNumber] && userSessions[senderPhoneNumber].phoneNumber) {
-      // If the user entered the phone number
-      // Save the phone number and prompt for the password
-      userSessions[senderPhoneNumber].phoneNumber = incomingMessage;
-      twiml.message('🔐 Please enter your password.');
-      userSessions[senderPhoneNumber].password = true; // Save the password flag in the session
-    } else if (userSessions[senderPhoneNumber] && userSessions[senderPhoneNumber].password) {
-      // If the user entered the password
-      // Check if the phone number and password are correct to log in
-      if (userSessions[senderPhoneNumber].phoneNumber === '0715483327' && incomingMessage === 'password123') {
-        userSessions[senderPhoneNumber].loggedIn = true;
-        twiml.message('🔓 You have successfully logged in. What would you like to do?');
-        twiml.message('🏦 Welcome to Noq Cash! How can I help you today?\n\n1️⃣ Balance Inquiry\n2️⃣ Funds Transfer\n3️⃣ Withdrawal\n4️⃣ Deposit\n5️⃣ Account Settings');
-      } else {
-        // If the password is incorrect
-        twiml.message('❌ Incorrect password. Please enter your password.');
-      }
-    }
   } catch (error) {
-    console.error('Error:', error);
+    console.error("Error:", error);
   }
 };
