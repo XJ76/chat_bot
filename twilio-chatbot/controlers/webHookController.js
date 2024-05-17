@@ -121,25 +121,25 @@ exports.handleIncomingMessage = async (req, res) => {
         );
 
         // EDIT THIS MENU FOR BILLS AND PAYMENTS(OPTION 5)
-        // if (incomingMessage === "1") {
-        //   // Handle Buy Airtime sub-options
-        //   twiml.message("Implementing Buy Airtime options...");
-        // } else if (incomingMessage === "2") {
-        //   // Handle Nyaradzo Funeral Policy sub-options
-        //   twiml.message("Implementing Nyaradzo Funeral Policy options...");
-        // } else if (incomingMessage === "3") {
+         if (incomingMessage === "1") {
+           // Handle Buy Airtime sub-options
+           twiml.message("Implementing Buy Airtime options...");
+         } else if (incomingMessage === "2") {
+           // Handle Nyaradzo Funeral Policy sub-options
+           twiml.message("Implementing Nyaradzo Funeral Policy options...");
+         } else if (incomingMessage === "3") {
         //   // Handle Buy Electricity sub-options
-        //   twiml.message("Implementing Buy Electricity options...");
-        // } else if (incomingMessage === "4") {
-        //   // Handle Eco Sure Life Cover sub-options
-        //   twiml.message("Implementing Eco Sure Life Cover options...");
-        // } else if (incomingMessage === "5") {
-        //   // Go back to main menu
-        //   twiml.message("Returning to main menu...");
-        // } else {
-        //   // Invalid option
-        //   twiml.message("Invalid option. Please choose from the available options.");
-        // }
+           twiml.message("Implementing Buy Electricity options...");
+         } else if (incomingMessage === "4") {
+           // Handle Eco Sure Life Cover sub-options
+           twiml.message("Implementing Eco Sure Life Cover options...");
+       } else if (incomingMessage === "5") {
+        //    Go back to main menu
+           twiml.message("Returning to main menu...");
+         } else {
+      //      Invalid option
+           twiml.message("Invalid option. Please choose from the available options.");
+         }
 
       }   
        
